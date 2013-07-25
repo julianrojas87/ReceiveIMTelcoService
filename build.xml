@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project default="all" name="RecieveIMTelcoService">
+    <target name="init">
+        <path id="slee">
+            <pathelement location="lib/slee.jar"/>
+        </path>
+        <taskdef classname="org.mobicents.eclipslee.ant.SbbJar"
+            classpath="lib/slee-tasks.jar" name="sbbjar"/>
+        <taskdef classname="org.mobicents.eclipslee.ant.EventJar"
+            classpath="lib/slee-tasks.jar" name="eventjar"/>
+        <taskdef classname="org.mobicents.eclipslee.ant.ProfileSpecJar"
+            classpath="lib/slee-tasks.jar" name="profilespecjar"/>
+        <taskdef classname="org.mobicents.eclipslee.ant.DeployableJar"
+            classpath="lib/slee-tasks.jar" name="deployablejar"/>
+        <taskdef
+            classname="org.mobicents.eclipslee.ant.ResourceAdaptorTypeJar"
+            classpath="lib/slee-tasks.jar" name="resourceadaptortypejar"/>
+        <taskdef
+            classname="org.mobicents.eclipslee.ant.ResourceAdaptorJar"
+            classpath="lib/slee-tasks.jar" name="resourceadaptorjar"/>
+        <path id="ExternalComponents">
+            <pathelement location="lib/DU/sip11-ra-DU-2.6.0.FINAL-Eclipslee.jar/jars/jain-sip-api-1.2.jar"/>
+            <pathelement location="lib/DU/sip11-ra-DU-2.6.0.FINAL-Eclipslee.jar/jars/jain-sip-ri-1.2.164.jar"/>
+            <pathelement location="lib/DU/sip11-ra-DU-2.6.0.FINAL-Eclipslee.jar/jars/sip11-events-2.6.0.FINAL.jar"/>
+            <pathelement location="lib/DU/sip11-ra-DU-2.6.0.FINAL-Eclipslee.jar/jars/sip11-library-2.6.0.FINAL.jar"/>
+            <pathelement location="lib/DU/sip11-ra-DU-2.6.0.FINAL-Eclipslee.jar/jars/sip11-ra-2.6.0.FINAL.jar"/>
+            <pathelement location="lib/DU/sip11-ra-DU-2.6.0.FINAL-Eclipslee.jar/jars/sip11-ratype-2.6.0.FINAL.jar"/>
+        	<pathelement location="/home/julian/Telcomp-Workspace/SendIMTelcoService/jars/StartSendIMTelcoService-event.jar"/>
+        	<pathelement location="/home/julian/Telcomp-Workspace/DataAccessService/jars/StartGetDataTelcoService-event.jar"/>
+        	<pathelement location="/home/julian/Telcomp-Workspace/DataAccessService/jars/EndGetDataTelcoService-event.jar"/>
+        </path>
+        <path id="path-ReceiveIM-sbb">
+            <pathelement location="/home/julian/Telcomp-Workspace/ReceiveIMTelcoService/jars/EndReceiveIMTelcoService-event.jar"/>
+            <pathelement location="/home/julian/Telcomp-Workspace/ReceiveIMTelcoService/lib/DU/sip11-ra-DU-2.6.0.FINAL-Eclipslee.jar/jars/sip11-events-2.6.0.FINAL.jar"/>
+        </path>
+    </target>
+    <target depends="init" name="all">
+        <ant target="build-EndReceiveIMTelcoService-event"/>
+        <ant target="build-ReceiveIM-sbb"/>
+        <ant target="build-receiveim-DU"/>
+    </target>
+    <target depends="init" name="clean">
+        <ant target="clean-EndReceiveIMTelcoService-event"/>
+        <ant target="clean-ReceiveIM-sbb"/>
+        <ant target="clean-receiveim-DU"/>
+    </target>
+    <target depends="init" name="build-EndReceiveIMTelcoService-event">
+        <mkdir dir="classes/EndReceiveIMTelcoService-event"/>
+        <mkdir dir="jars/"/>
+        <javac destdir="classes/EndReceiveIMTelcoService-event"
+            includes="org/telcomp/events/EndReceiveIMTelcoServiceEvent.java" srcdir="src">
+            <classpath>
+                <path refid="slee"/>
+            </classpath>
+        </javac>
+        <eventjar classpath="classes/EndReceiveIMTelcoService-event"
+            destfile="jars/EndReceiveIMTelcoService-event.jar" eventjarxml="src/org/telcomp/events/EndReceiveIMTelcoService-event-jar.xml"/>
+    </target>
+    <target name="clean-EndReceiveIMTelcoService-event">
+        <delete file="jars/EndReceiveIMTelcoService-event.jar"/>
+        <delete dir="classes/EndReceiveIMTelcoService-event"/>
+    </target>
+    <target depends="init" name="build-ReceiveIM-sbb">
+        <mkdir dir="classes/ReceiveIM-sbb"/>
+        <mkdir dir="jars/"/>
+        <javac destdir="classes/ReceiveIM-sbb"
+            includes="org/telcomp/sbb/ReceiveIMSbb.java" srcdir="src">
+            <classpath>
+                <path refid="path-ReceiveIM-sbb"/>
+                <path refid="ExternalComponents"/>
+                <path refid="slee"/>
+            </classpath>
+        </javac>
+        <sbbjar classpath="classes/ReceiveIM-sbb"
+            destfile="jars/ReceiveIM-sbb.jar" sbbjarxml="src/org/telcomp/sbb/ReceiveIM-sbb-jar.xml"/>
+    </target>
+    <target name="clean-ReceiveIM-sbb">
+        <delete file="jars/ReceiveIM-sbb.jar"/>
+        <delete dir="classes/ReceiveIM-sbb"/>
+    </target>
+    <target depends="build-ReceiveIM-sbb,build-EndReceiveIMTelcoService-event" name="build-receiveim-DU">
+        <mkdir dir="classes/receiveim-DU"/>
+        <copy
+            file="src/org/telcomp/service/receiveim-deployable-unit.xml" tofile="classes/receiveim-DU/deployable-unit.xml"/>
+        <jar jarfile="jars/receiveim-DU.jar">
+            <metainf dir="classes/receiveim-DU" includes="deployable-unit.xml"/>
+            <fileset dir="" includes="jars/ReceiveIM-sbb.jar"/>
+            <fileset dir="" includes="jars/EndReceiveIMTelcoService-event.jar"/>
+            <fileset dir="." includes="src/org/telcomp/service/receiveim-service.xml"/>
+        </jar>
+    </target>
+    <target name="clean-receiveim-DU">
+        <delete file="jars/receiveim-DU.jar"/>
+        <delete dir="classes/receiveim-DU"/>
+    </target>
+</project>
