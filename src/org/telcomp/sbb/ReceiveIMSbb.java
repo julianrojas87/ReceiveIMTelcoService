@@ -39,6 +39,9 @@ public abstract class ReceiveIMSbb implements javax.slee.Sbb {
 	public void onMessage(RequestEvent event, ActivityContextInterface aci) {
 		Request request = event.getRequest();
 		ContentTypeHeader cont = (ContentTypeHeader) request.getHeader(ContentTypeHeader.NAME);
+		System.out.println("*******************************************");
+		System.out.println("ReceiveIMTelcoService Invoked");
+		
 		if(cont.getContentType().equals("text")){
 			CallIdHeader callId = (CallIdHeader) request.getHeader(CallIdHeader.NAME);
 			String CallID = callId.getCallId();
@@ -63,6 +66,9 @@ public abstract class ReceiveIMSbb implements javax.slee.Sbb {
 				operationInputs.put("message", (String) message);
 				EndReceiveIMTelcoServiceEvent EndReceiveIMTelcoServiceEvent = new EndReceiveIMTelcoServiceEvent(operationInputs);
 				this.fireEndReceiveIMTelcoServiceEvent(EndReceiveIMTelcoServiceEvent, nullAci, null);
+				System.out.println("Output FromUserUri = "+fromHeader.getAddress().toString());
+				System.out.println("Output Message = "+message);
+				System.out.println("*******************************************");
 			} else{
 				HashMap<String, Object> operationInputs = new HashMap<String, Object>();
 				operationInputs.put("parameter", (String) "sipuri");
